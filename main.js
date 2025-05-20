@@ -22,7 +22,7 @@ const parseDate = d3.timeParse("%Y-%m-%d");
 d3.csv("weather.csv").then(data => { 
     data.forEach(d => {
         d.date = parseDate(d.date.trim());
-        d.avg_temp = +d.avg_temp;
+        d.avg_temp = +d.actual_mean_temp;
         d.city = d.city.trim(); // cleans up invisible whitespace
     });
 
