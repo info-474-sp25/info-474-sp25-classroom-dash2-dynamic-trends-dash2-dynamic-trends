@@ -19,7 +19,7 @@ const svg1 = d3.select("#lineChart1")
 // 2.a: LOAD...
 const parseDate = d3.timeParse("%Y-%m-%d");
 
-d3.csv("weather.csv").then(data => {
+d3.csv("weather.csv").then(data => { 
     data.forEach(d => {
         d.date = parseDate(d.date.trim());
         d.avg_temp = +d.avg_temp;
@@ -28,6 +28,7 @@ d3.csv("weather.csv").then(data => {
 
     // 2.b: ... AND TRANSFORM DATA
     const seattleData = data.filter(d => d.city.toLowerCase() === "seattle");
+    window.seattleData = seattleData;
     console.log("Filtered Seattle data:", seattleData.slice(0, 5));
 
     // 3.a: SET SCALES FOR CHART 1
