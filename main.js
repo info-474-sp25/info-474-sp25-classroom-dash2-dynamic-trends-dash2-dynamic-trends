@@ -4,6 +4,13 @@ const width = 900 - margin.left - margin.right;
 const height = 400 - margin.top - margin.bottom;
 
 // Create SVG containers for both charts
+const svg1_temp = d3.select("#lineChart1") // If you change this ID, you must change it in index.html too
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
+
 const svg2_precip = d3.select("#lineChart2") // If you change this ID, you must change it in index.html too
     .append("svg")
     .attr("width", width + margin.left + margin.right)
@@ -14,19 +21,19 @@ const svg2_precip = d3.select("#lineChart2") // If you change this ID, you must 
 // 2.a: LOAD...
 d3.csv("weather.csv").then(data => {
     // 2.b: ... AND TRANSFORM DATA
-    console.log(data); // Check data
-    data = data.map(d => {
-        return {
-            year: parseInt(d.record_max_temp_year),
-            temp: +d.record_max_temp
-        };
-    }).filter(d => !isNaN(d.year) && !isNaN(d.temp));
+    // ChatGPT used to help separate data transformations for each viz which resolved conflicts.
+    const data_temp = data.map(d => ({
+        year: parseInt(d.record_max_temp_year),
+        temp: +d.record_max_temp
+    })).filter(d => !isNaN(d.year) && !isNaN(d.temp))
+      .sort((a, b) => a.year - b.year)
+      .filter((d, i) => i % 10 === 0);
 
-    // Sort by year
-    data.sort((a, b) => a.year - b.year);
-
-    //keep every 5th year
-    data = data.filter((d, i) => i % 10 === 0);
+    const data_precip = data.map(d => ({
+        city: d.city,
+        date: d3.timeParse("%m/%d/%Y")(d.date),
+        actual_precipitation: +d.actual_precipitation
+    })).filter(d => d.date && !isNaN(d.actual_precipitation));
 
     // Define x and y scales
     const x = d3.scaleLinear()
@@ -43,51 +50,39 @@ d3.csv("weather.csv").then(data => {
         .y(d => y(d.temp));
 
     // Append path
-    svg1_RENAME.append("path")
-        .datum(data)
+    svg1_temp.append("path")
+        .datum(data_temp)
         .attr("fill", "none")
         .attr("stroke", "#2D789E")
         .attr("stroke-width", 2)
         .attr("d", line);
 
     // Axes
-    svg1_RENAME.append("g")
+    svg1_temp.append("g")
         .attr("transform", `translate(0,${height})`)
         .call(d3.axisBottom(x).tickFormat(d3.format("d")));
 
-    svg1_RENAME.append("g")
+    svg1_temp.append("g")
         .call(d3.axisLeft(y));
 
     // Labels
-    svg1_RENAME.append("text")
+    svg1_temp.append("text")
         .attr("x", width / 2)
         .attr("y", height + 40)
         .attr("text-anchor", "middle")
         .text("Year");
 
-    svg1_RENAME.append("text")
+    svg1_temp.append("text")
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
         .attr("y", -50)
         .attr("text-anchor", "middle")
         .text("Record Max Temperature (°F)");
-});
 
-    const parseDate = d3.timeParse("%m/%d/%Y");
     const formatMonthYear = d3.timeFormat("%Y-%m"); // ChatGPT used to help write code for parsing and formatting month data from the date column. 
     const parseMonthYear = d3.timeParse("%Y-%m");
-
-    data.forEach(d => {
-        d.date = parseDate(d.date);
-        d.actual_precipitation = +d.actual_precipitation;
-    });
-
-    data.filter(d => 
-        d.date != null
-        && d.actual_precipitation != null
-    );  
     
-    const dataMap2 = d3.rollups(data,
+    const dataMap2 = d3.rollups(data_precip,
         v => d3.mean(v, d => d.actual_precipitation),
         d => d.city,
         d => formatMonthYear(d.date)
@@ -110,7 +105,7 @@ d3.csv("weather.csv").then(data => {
     // 3.b: SET SCALES FOR CHART 2
 
     let xMonth = d3.scaleTime() 
-    .domain(d3.extent(data, d => d.date)) // ChatGPT used to help write this line (used .extent instead of .max).
+    .domain(d3.extent(data_precip, d => d.date)) // ChatGPT used to help write this line (used .extent instead of .max).
     .range([0, width]);
 
     let yAvgPrecip = d3.scaleLinear()
@@ -122,14 +117,14 @@ d3.csv("weather.csv").then(data => {
     const color = d3.scaleOrdinal(d3.schemeCategory10)
         .domain(cityDataArr.map(d => d.city));
 
-    const line = d3.line()
+    const line2 = d3.line()
         .x(d => xMonth(d.month))  
         .y(d => yAvgPrecip(d.avgPrecip));
 
     cityDataArr.forEach(cityEntry => {
         svg2_precip.append("path")
         .datum(cityEntry.values)
-        .attr("d", line)
+        .attr("d", line2)
         .attr("stroke", color(cityEntry.city))
         .attr("stroke-width", 4)
         .attr("fill", "none");
@@ -179,7 +174,7 @@ d3.csv("weather.csv").then(data => {
             .style("font-size", "12px")
             .attr("alignment-baseline", "middle");
     });
-
+});
     // 7.b: ADD INTERACTIVITY FOR CHART 2
 
 
