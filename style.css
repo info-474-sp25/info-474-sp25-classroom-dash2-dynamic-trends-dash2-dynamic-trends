@@ -135,3 +135,23 @@ a:hover {
 }
 
 /* CSS generated with assistance from ChatGPT and DeepSeek. */
+
+.tooltip {
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+svg {
+    font-family: sans-serif;
+  }
+  
+  .line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2;
+  }
+  
+  .dot {
+    fill: black;
+  }
+  
