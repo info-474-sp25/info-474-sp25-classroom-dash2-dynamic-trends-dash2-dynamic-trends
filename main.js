@@ -4,14 +4,7 @@ const width = 900 - margin.left - margin.right;
 const height = 400 - margin.top - margin.bottom;
 
 // Create SVG containers for both charts
-const svg1_precip = d3.select("#lineChart1") // If you change this ID, you must change it in index.html too
-    .append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
-    .append("g")
-    .attr("transform", `translate(${margin.left},${margin.top})`);
-
-const svg2_RENAME = d3.select("#lineChart2")
+const svg2_precip = d3.select("#lineChart2") // If you change this ID, you must change it in index.html too
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
@@ -41,13 +34,13 @@ d3.csv("weather.csv").then(data => {
         && d.actual_precipitation != null
     );  
     
-    const dataMap1 = d3.rollups(data,
+    const dataMap2 = d3.rollups(data,
         v => d3.mean(v, d => d.actual_precipitation),
         d => d.city,
         d => formatMonthYear(d.date)
     );
 
-    const cityDataArr = Array.from(dataMap1, ([city, values]) => ({
+    const cityDataArr = Array.from(dataMap2, ([city, values]) => ({
         city,
         values: values
             .map(([monthStr, avgPrecip]) => ({
@@ -57,7 +50,11 @@ d3.csv("weather.csv").then(data => {
             .sort((a, b) => a.month - b.month)
     }));
 
-    // 3.a: SET SCALES FOR CHART 1
+    // ==========================================
+    //         CHART 2 (if applicable)
+    // ==========================================
+
+    // 3.b: SET SCALES FOR CHART 2
 
     let xMonth = d3.scaleTime() 
     .domain(d3.extent(data, d => d.date)) // ChatGPT used to help write this line (used .extent instead of .max).
@@ -67,7 +64,7 @@ d3.csv("weather.csv").then(data => {
         .domain([0, d3.max(cityDataArr.flatMap(d => d.values.map(v => v.avgPrecip)))]) // ChatGPT used to help write this line. 
         .range([height, 0]);
 
-    // 4.a: PLOT DATA FOR CHART 1
+    // 4.b: PLOT DATA FOR CHART 2
 
     const color = d3.scaleOrdinal(d3.schemeCategory10)
         .domain(cityDataArr.map(d => d.city));
@@ -77,7 +74,7 @@ d3.csv("weather.csv").then(data => {
         .y(d => yAvgPrecip(d.avgPrecip));
 
     cityDataArr.forEach(cityEntry => {
-        svg1_precip.append("path")
+        svg2_precip.append("path")
         .datum(cityEntry.values)
         .attr("d", line)
         .attr("stroke", color(cityEntry.city))
@@ -85,25 +82,25 @@ d3.csv("weather.csv").then(data => {
         .attr("fill", "none");
     });
 
-    // 5.a: ADD AXES FOR CHART 1
+    // 5.b: ADD AXES FOR CHART 2
     
-    svg1_precip.append("g")
+    svg2_precip.append("g")
     .attr("transform", `translate(0,${height})`)
     .call(d3.axisBottom(xMonth).tickFormat(d3.timeFormat("%b %Y"))); // ChatGPT used to write this line of code, getting tickFormat correct with time. 
 
-    svg1_precip.append("g")
+    svg2_precip.append("g")
     .call(d3.axisLeft(yAvgPrecip));
 
-    // 6.a: ADD LABELS FOR CHART 1
+    // 6.b: ADD LABELS FOR CHART 2
 
-    svg1_precip.append("text")
+    svg2_precip.append("text")
         .attr("class", "axis-label")
         .attr("text-anchor", "middle")
         .attr("x", width / 2)
         .attr("y", height + (margin.bottom / 2))
         .text("Month");
 
-    svg1_precip.append("text")
+    svg2_precip.append("text")
         .attr("class", "axis-label")
         .attr("transform", "rotate(-90)")
         .attr("y", -margin.left / 2)
@@ -111,7 +108,7 @@ d3.csv("weather.csv").then(data => {
         .text("Avg. Actual Precipitation (in)");
 
     // ChatGPT used to help write legend code.
-        const legend = svg1_precip.append("g")
+        const legend = svg2_precip.append("g")
         .attr("transform", `translate(${width + 20}, 0)`);
     
     cityDataArr.forEach((d, i) => {
@@ -129,25 +126,6 @@ d3.csv("weather.csv").then(data => {
             .style("font-size", "12px")
             .attr("alignment-baseline", "middle");
     });
-
-    // 7.a: ADD INTERACTIVITY FOR CHART 1
-    
-
-    // ==========================================
-    //         CHART 2 (if applicable)
-    // ==========================================
-
-    // 3.b: SET SCALES FOR CHART 2
-
-    
-    // 4.b: PLOT DATA FOR CHART 2
-
-
-    // 5.b: ADD AXES FOR CHART 2
-
-
-    // 6.b: ADD LABELS FOR CHART 2
-
 
     // 7.b: ADD INTERACTIVITY FOR CHART 2
 
