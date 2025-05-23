@@ -18,28 +18,67 @@ const svg2_RENAME = d3.select("#lineChart2")
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-// (If applicable) Tooltip element for interactivity
-// const tooltip = ...
+// Load CSV
+d3.csv("weather.csv").then(data => {
+    // Parse and clean data
+    data = data.map(d => {
+        return {
+            year: parseInt(d.record_max_temp_year),
+            temp: +d.record_max_temp
+        };
+    }).filter(d => !isNaN(d.year) && !isNaN(d.temp));
 
-// 2.a: LOAD...
-d3.csv("YOUR_CSV_NAME.csv").then(data => {
-    // 2.b: ... AND TRANSFORM DATA
+    // Sort by year
+    data.sort((a, b) => a.year - b.year);
 
+    //keep every 5th year
+    data = data.filter((d, i) => i % 10 === 0);
 
-    // 3.a: SET SCALES FOR CHART 1
+    // Define x and y scales
+    const x = d3.scaleLinear()
+    .domain([1870, 2020])  // <-- FIXED DOMAIN from 1870 to 2020
+    .range([0, width]);
 
+    const y = d3.scaleLinear()
+        .domain([50, 120]) // Fixed y-axis range
+        .range([height, 0]);
 
-    // 4.a: PLOT DATA FOR CHART 1
+    // Line function
+    const line = d3.line()
+        .x(d => x(d.year))
+        .y(d => y(d.temp));
 
+    // Append path
+    svg1_RENAME.append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "#2D789E")
+        .attr("stroke-width", 2)
+        .attr("d", line);
 
-    // 5.a: ADD AXES FOR CHART 1
+    // Axes
+    svg1_RENAME.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x).tickFormat(d3.format("d")));
 
+    svg1_RENAME.append("g")
+        .call(d3.axisLeft(y));
 
-    // 6.a: ADD LABELS FOR CHART 1
+    // Labels
+    svg1_RENAME.append("text")
+        .attr("x", width / 2)
+        .attr("y", height + 40)
+        .attr("text-anchor", "middle")
+        .text("Year");
 
+    svg1_RENAME.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -50)
+        .attr("text-anchor", "middle")
+        .text("Record Max Temperature (°F)");
+});
 
-    // 7.a: ADD INTERACTIVITY FOR CHART 1
-    
 
     // ==========================================
     //         CHART 2 (if applicable)
@@ -60,4 +99,3 @@ d3.csv("YOUR_CSV_NAME.csv").then(data => {
     // 7.b: ADD INTERACTIVITY FOR CHART 2
 
 
-});
