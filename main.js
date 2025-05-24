@@ -80,6 +80,34 @@ d3.csv("weather.csv").then(data => {
 });
 
 
+
+
+    // Legend(chatgpt)
+    const legend = svg1_RENAME.append("g")
+        .attr("transform", `translate(${width - 150}, ${-30})`); // Adjust position as needed
+
+    legend.append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 20)
+        .attr("height", 10)
+        .attr("fill", "#2D789E");
+
+    legend.append("text")
+        .attr("x", 30)
+        .attr("y", 10)
+        .attr("alignment-baseline", "middle")
+        .style("font-size", "12px")
+        .text("Record Max Temp");
+
+      
+          
+
+
+
+
+
+
     // ==========================================
     //         CHART 2 (if applicable)
     // ==========================================
