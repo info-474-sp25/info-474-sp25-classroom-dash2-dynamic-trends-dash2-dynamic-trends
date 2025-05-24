@@ -156,5 +156,40 @@ d3.csv("weather.csv").then(rawData => {
         .text("Average Monthly Precipitation");
 
     // Optionally, add legend, tooltips, interactivity here
+    
+
+// Legend
+const legend = svg2_precip.append("g")
+.attr("transform", `translate(${width + 20}, 0)`);
+
+cityDataArr.forEach((d, i) => {
+legend.append("rect")
+  .attr("x", 0)
+  .attr("y", i * 20)
+  .attr("width", 12)
+  .attr("height", 12)
+  .attr("fill", color(d.city));
+
+legend.append("text")
+  .attr("x", 18)
+  .attr("y", i * 20 + 10)
+  .style("font-size", "12px")
+  .attr("alignment-baseline", "middle")
+  .text(d.city);
+});
+
 
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
