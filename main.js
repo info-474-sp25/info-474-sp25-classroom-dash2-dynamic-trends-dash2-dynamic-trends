@@ -1,127 +1,160 @@
 // 1: SET GLOBAL VARIABLES
-const margin = { top: 50, right: 30, bottom: 60, left: 70 };
+const margin = { top: 50, right: 150, bottom: 60, left: 70 };
 const width = 900 - margin.left - margin.right;
 const height = 400 - margin.top - margin.bottom;
 
 // Create SVG containers for both charts
-const svg1_RENAME = d3.select("#lineChart1") // If you change this ID, you must change it in index.html too
+const svg1_temp = d3.select("#lineChart1") // Ensure this ID matches your HTML
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-const svg2_RENAME = d3.select("#lineChart2")
+const svg2_precip = d3.select("#lineChart2") // Ensure this ID matches your HTML
     .append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-// Load CSV
-d3.csv("weather.csv").then(data => {
-    // Parse and clean data
-    data = data.map(d => {
-        return {
-            year: parseInt(d.record_max_temp_year),
-            temp: +d.record_max_temp
-        };
-    }).filter(d => !isNaN(d.year) && !isNaN(d.temp));
+// 2.a: LOAD DATA
+d3.csv("weather.csv").then(rawData => {
 
-    // Sort by year
-    data.sort((a, b) => a.year - b.year);
+    // 2.b: TRANSFORM DATA for temperature chart
+    let tempData = rawData.map(d => ({
+        year: parseInt(d.record_max_temp_year),
+        temp: +d.record_max_temp
+    }))
+    .filter(d => !isNaN(d.year) && !isNaN(d.temp))
+    .sort((a, b) => a.year - b.year)
+    // Keep every 10th year (you had every 5th but filtering i % 10 === 0)
+    .filter((d, i) => i % 10 === 0);
 
-    //keep every 5th year
-    data = data.filter((d, i) => i % 10 === 0);
+    // 2.c: TRANSFORM DATA for precipitation chart
+    const parseDate = d3.timeParse("%m/%d/%Y");
+    const formatMonthYear = d3.timeFormat("%Y-%m");
 
-    // Define x and y scales
-    const x = d3.scaleLinear()
-    .domain([1870, 2020])  // <-- FIXED DOMAIN from 1870 to 2020
-    .range([0, width]);
+    let precipData = rawData.map(d => ({
+        city: d.city,
+        date: parseDate(d.date),
+        actual_precipitation: +d.actual_precipitation
+    }))
+    .filter(d => d.date != null && !isNaN(d.actual_precipitation));
 
-    const y = d3.scaleLinear()
-        .domain([50, 120]) // Fixed y-axis range
+    // Group precipitation data by city and month, then average precipitation
+    const dataMap2 = d3.rollups(
+        precipData,
+        v => d3.mean(v, d => d.actual_precipitation),
+        d => d.city,
+        d => formatMonthYear(d.date)
+    );
+
+    // Convert rolled up data into array of objects for easier plotting
+    const cityDataArr = dataMap2.map(([city, values]) => ({
+        city,
+        values: values.map(([monthStr, avgPrecip]) => ({
+            month: d3.timeParse("%Y-%m")(monthStr),
+            avgPrecip
+        })).sort((a, b) => a.month - b.month)
+    }));
+
+    // ----------- CHART 1: Temperature Over Years -----------
+
+    const xTemp = d3.scaleLinear()
+        .domain(d3.extent(tempData, d => d.year))
+        .range([0, width]);
+
+    const yTemp = d3.scaleLinear()
+        .domain([d3.min(tempData, d => d.temp) - 5, d3.max(tempData, d => d.temp) + 5])
         .range([height, 0]);
 
-    // Line function
-    const line = d3.line()
-        .x(d => x(d.year))
-        .y(d => y(d.temp));
+    const lineTemp = d3.line()
+        .x(d => xTemp(d.year))
+        .y(d => yTemp(d.temp));
 
-    // Append path
-    svg1_RENAME.append("path")
-        .datum(data)
+    // Append temperature line path
+    svg1_temp.append("path")
+        .datum(tempData)
         .attr("fill", "none")
         .attr("stroke", "#2D789E")
         .attr("stroke-width", 2)
-        .attr("d", line);
+        .attr("d", lineTemp);
 
-    // Axes
-    svg1_RENAME.append("g")
+    // Axes for temperature chart
+    svg1_temp.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+        .call(d3.axisBottom(xTemp).tickFormat(d3.format("d")));
 
-    svg1_RENAME.append("g")
-        .call(d3.axisLeft(y));
+    svg1_temp.append("g")
+        .call(d3.axisLeft(yTemp));
 
-    // Labels
-    svg1_RENAME.append("text")
+    // Labels for temperature chart
+    svg1_temp.append("text")
         .attr("x", width / 2)
         .attr("y", height + 40)
         .attr("text-anchor", "middle")
         .text("Year");
 
-    svg1_RENAME.append("text")
+    svg1_temp.append("text")
         .attr("transform", "rotate(-90)")
         .attr("x", -height / 2)
         .attr("y", -50)
         .attr("text-anchor", "middle")
         .text("Record Max Temperature (°F)");
 
+    // ----------- CHART 2: Average Monthly Precipitation by City -----------
 
-        const legend1 = svg1_RENAME.append("g")
-.attr("transform", `translate(${width - 150}, ${-30})`);
+    const xMonth = d3.scaleTime()
+        .domain([
+            d3.min(cityDataArr, c => d3.min(c.values, v => v.month)),
+            d3.max(cityDataArr, c => d3.max(c.values, v => v.month))
+        ])
+        .range([0, width]);
 
-legend1.append("rect")
-.attr("x", 0)
-.attr("y", 0)
-.attr("width", 20)
-.attr("height", 10)
-.attr("fill", "#2D789E");
+    const yAvgPrecip = d3.scaleLinear()
+        .domain([0, d3.max(cityDataArr, c => d3.max(c.values, v => v.avgPrecip)) * 1.1])
+        .range([height, 0]);
 
-legend1.append("text")
-.attr("x", 30)
-.attr("y", 10)
-.attr("alignment-baseline", "middle")
-.style("font-size", "12px")
-.text("Record Max Temp");
+    const color = d3.scaleOrdinal(d3.schemeCategory10)
+        .domain(cityDataArr.map(d => d.city));
 
+    const linePrecip = d3.line()
+        .x(d => xMonth(d.month))
+        .y(d => yAvgPrecip(d.avgPrecip));
 
+    // Draw lines for each city
+    cityDataArr.forEach(cityEntry => {
+        svg2_precip.append("path")
+            .datum(cityEntry.values)
+            .attr("fill", "none")
+            .attr("stroke", color(cityEntry.city))
+            .attr("stroke-width", 2)
+            .attr("d", linePrecip);
+    });
 
+    // Axes for precipitation chart
+    svg2_precip.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(xMonth).tickFormat(d3.timeFormat("%Y-%m")));
+
+    svg2_precip.append("g")
+        .call(d3.axisLeft(yAvgPrecip));
+
+    // Labels for precipitation chart
+    svg2_precip.append("text")
+        .attr("x", width / 2)
+        .attr("y", height + 40)
+        .attr("text-anchor", "middle")
+        .text("Month");
+
+    svg2_precip.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("x", -height / 2)
+        .attr("y", -50)
+        .attr("text-anchor", "middle")
+        .text("Average Monthly Precipitation");
+
+    // Optionally, add legend, tooltips, interactivity here
 
 });
-
-
-
-
-
-
-    // ==========================================
-    //         CHART 2 (if applicable)
-    // ==========================================
-
-    // 3.b: SET SCALES FOR CHART 2
-
-
-    // 4.b: PLOT DATA FOR CHART 2
-
-
-    // 5.b: ADD AXES FOR CHART 
-
-
-    // 6.b: ADD LABELS FOR CHART 2
-
-
-    // 7.b: ADD INTERACTIVITY FOR CHART 2
-
-
