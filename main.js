@@ -97,6 +97,124 @@ d3.csv("weather.csv").then(rawData => {
         .attr("text-anchor", "middle")
         .text("Record Max Temperature (°F)");
 
+
+
+        // updateChart function 
+function updateChart(selectedYear) {
+    const year = +selectedYear;
+    const selected = tempData.find(d => d.year === year);
+  
+    // Remove previous highlights
+    svg1_temp.selectAll(".highlight-circle").remove();
+    svg1_temp.selectAll(".highlight-label").remove();
+  
+    if (selected) {
+      svg1_temp.append("circle")
+        .attr("class", "highlight-circle")
+        .attr("cx", xTemp(selected.year))
+        .attr("cy", yTemp(selected.temp))
+        .attr("r", 5)
+        .attr("fill", "red");
+  
+      svg1_temp.append("text")
+        .attr("class", "highlight-label")
+        .attr("x", xTemp(selected.year) + 8)
+        .attr("y", yTemp(selected.temp) - 10)
+        .attr("fill", "red")
+        .text(`${selected.temp}°F`);
+    }
+  }
+  
+
+// Get a reference to the dropdown
+const yearSelect = document.getElementById("yearSelect");
+const years = [...new Set(tempData.map(d => d.year))];
+
+// Populate the dropdown with year options
+years.forEach(year => {
+  const option = document.createElement("option");
+  option.value = year;
+  option.textContent = year;
+  yearSelect.appendChild(option);
+});
+
+// Update chart when dropdown changes
+yearSelect.addEventListener("change", function () {
+  updateChart(this.value);
+});
+
+
+const trendSelect = document.getElementById("trendSelect");
+
+trendSelect.addEventListener("change", function() {
+  updateTrendline(this.value);
+});
+
+
+// trendline
+function updateTrendline(type) {
+    // Remove existing trendline if any
+    svg1_temp.selectAll(".trendline").remove();
+  
+    if (type === "linear") {
+      // Simple linear regression for tempData
+      const n = tempData.length;
+      const sumX = d3.sum(tempData, d => d.year);
+      const sumY = d3.sum(tempData, d => d.temp);
+      const sumXY = d3.sum(tempData, d => d.year * d.temp);
+      const sumX2 = d3.sum(tempData, d => d.year * d.year);
+  
+      const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+      const intercept = (sumY - slope * sumX) / n;
+  
+      // Create points for the trendline based on x domain
+      const xDomain = d3.extent(tempData, d => d.year);
+      const trendPoints = xDomain.map(x => ({
+        year: x,
+        temp: slope * x + intercept
+      }));
+  
+      const lineTrend = d3.line()
+        .x(d => xTemp(d.year))
+        .y(d => yTemp(d.temp));
+  
+      svg1_temp.append("path")
+        .datum(trendPoints)
+        .attr("class", "trendline")
+        .attr("fill", "none")
+        .attr("stroke", "orange")
+        .attr("stroke-width", 2)
+        .attr("stroke-dasharray", "5,5")
+        .attr("d", lineTrend);
+    } else if (type === "movingAvg") {
+      // Simple moving average (window size = 3)
+      const windowSize = 3;
+      let movingAvgData = [];
+  
+      for (let i = 0; i < tempData.length - windowSize + 1; i++) {
+        let windowSlice = tempData.slice(i, i + windowSize);
+        let avgYear = d3.mean(windowSlice, d => d.year);
+        let avgTemp = d3.mean(windowSlice, d => d.temp);
+        movingAvgData.push({ year: avgYear, temp: avgTemp });
+      }
+  
+      const lineTrend = d3.line()
+        .x(d => xTemp(d.year))
+        .y(d => yTemp(d.temp));
+  
+      svg1_temp.append("path")
+        .datum(movingAvgData)
+        .attr("class", "trendline")
+        .attr("fill", "none")
+        .attr("stroke", "green")
+        .attr("stroke-width", 2)
+        .attr("d", lineTrend);
+    }
+  }
+  
+
+
+
     // ----------- CHART 2: Precipitation by City -----------
     const xMonth = d3.scaleTime()
         .domain([
