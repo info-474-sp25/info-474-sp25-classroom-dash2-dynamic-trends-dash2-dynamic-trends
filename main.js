@@ -51,7 +51,7 @@ d3.csv("weather.csv").then(rawData => {
 
     const cityDataArr = dataMap2.map(([city, values]) => ({
         city,
-        values: values.map(([monthStr, avgPrecip]) => ({
+        values: values.map(([monthStr, avgPrecip]) => ({ // ChatGPT used to help write values code.
             month: d3.timeParse("%Y-%m")(monthStr),
             avgPrecip
         })).sort((a, b) => a.month - b.month)
@@ -98,15 +98,12 @@ d3.csv("weather.csv").then(rawData => {
         .text("Record Max Temperature (°F)");
 
     // ----------- CHART 2: Precipitation by City -----------
-    const xMonth = d3.scaleTime()
-        .domain([
-            d3.min(cityDataArr, c => d3.min(c.values, v => v.month)),
-            d3.max(cityDataArr, c => d3.max(c.values, v => v.month))
-        ])
-        .range([0, width]);
+    let xMonth = d3.scaleTime() 
+    .domain(d3.extent(precipData, d => d.date)) // ChatGPT used to help write this line (used .extent instead of .max).
+    .range([0, width]);
 
-    const yAvgPrecip = d3.scaleLinear()
-        .domain([0, d3.max(cityDataArr, c => d3.max(c.values, v => v.avgPrecip)) * 1.1])
+    let yAvgPrecip = d3.scaleLinear()
+        .domain([0, d3.max(cityDataArr.flatMap(d => d.values.map(v => v.avgPrecip)))]) // ChatGPT used to help write this line. 
         .range([height, 0]);
 
     const color = d3.scaleOrdinal(d3.schemeCategory10)
@@ -127,15 +124,15 @@ d3.csv("weather.csv").then(rawData => {
 
     svg2_precip.append("g")
         .attr("transform", `translate(0,${height})`)
-        .call(d3.axisBottom(xMonth).tickFormat(d3.timeFormat("%Y-%m")));
+        .call(d3.axisBottom(xMonth).tickFormat(d3.timeFormat("%b %Y")));
 
     svg2_precip.append("g")
         .call(d3.axisLeft(yAvgPrecip));
 
     svg2_precip.append("text")
+        .attr("text-anchor", "middle")
         .attr("x", width / 2)
         .attr("y", height + 40)
-        .attr("text-anchor", "middle")
         .text("Month");
 
     svg2_precip.append("text")
@@ -143,7 +140,7 @@ d3.csv("weather.csv").then(rawData => {
         .attr("x", -height / 2)
         .attr("y", -50)
         .attr("text-anchor", "middle")
-        .text("Average Monthly Precipitation");
+        .text("Avg. Actual Monthly Precipitation");
 
     // ----------- LEGEND for precipitation chart -----------
     const legend = svg2_precip.append("g")
