@@ -6,11 +6,13 @@
     <title>Dashboard 2</title>
     <script src="https://d3js.org/d3.v7.min.js"></script> <!-- Load D3 library -->
     <link rel="stylesheet" href="style.css"> <!-- Connect to style.css for styles -->
+   
+
 </head>
 <body class="vertical-container">
     <!-- HEADER -->
     <div class="item">
-        <h1>Changes in Record High Temperatures and Precipitation Averages Over Time</h1>
+        <h1>Changes in Record High Temperatures and Precipitation Averages Over Years</h1>
         <p><strong>Author(s):</strong>Elroe Yayiso & Lydia Sorbo</p>
         <p><strong>Documentation:</strong> <a href="https://docs.google.com/document/d/1k0Rfnek7oId1FAKE-4IdkFy00F0fBNCnnjjmQjL02l4/edit?usp=sharing" target="_blank">Edit link in "index.html" on line 13. Give your document "Viewer" access to UW in share settings.</a></p>
     </div>
@@ -30,13 +32,23 @@
     </div>
 
     <!-- CHART(S) -->
-    <div class="item chart-container">
-        <h2>Record High Temperatures Over Time</h2>
-        <svg id="lineChart1" width="900" height="400"></svg> <!-- If you change this ID name, you must change it in main.js too -->
-    </div>
+   
+<div class="item chart-container">
+    <h2>Record High Temperatures Over Time</h2>
+    
+  
+  <!-- Chart -->
+  <svg id="lineChart1" width="900" height="400"></svg>
+</div>
+
+
+
+
+
+
     <!-- DELETE THE FOLLOWING DIV IF YOU ONLY HAVE 1 CHART. -->
     <div class="item chart-container">
-        <h2>Average Precipitation in Various U.S. Cities from July 2014 to June 2015</h2>
+        <h2>Average Precipitation From June 2014 - 2015</h2>
         <svg id="lineChart2" width="900" height="400"></svg>
     </div>
     <script src="main.js"></script>
