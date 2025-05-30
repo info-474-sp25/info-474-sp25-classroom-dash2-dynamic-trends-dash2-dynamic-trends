@@ -279,4 +279,71 @@ function updateTrendline(type) {
             .attr("alignment-baseline", "middle")
             .text(d.city);
     });
+
+    // --- INTERACTIVITY CHART 2 ---
+
+    // Tooltip
+
+    const allCityPoints = cityDataArr.flatMap(city => 
+        city.values.map(d => ({ ...d, city: city.city }))
+    );
+
+    const tooltip = d3.select("body") // Create tooltip
+        .append("div")
+        .attr("class", "tooltip")
+        .style("position", "absolute")
+        .style("visibility", "hidden")
+        .style("background", "rgba(0, 0, 0, 0.7)")
+        .style("color", "white")
+        .style("padding", "10px")
+        .style("border-radius", "5px")
+        .style("font-size", "12px");
+
+    svg2_precip.selectAll(".data-point") // Create tooltip events
+        .data(allCityPoints) // Bind only the filtered STEM data
+        // .data([selectedCategoryData]) // D7: Bind only to category selected by dropdown menu
+        .enter()
+        .append("circle")
+        .attr("class", "data-point")
+        .attr("cx", d => xMonth(d.month))
+        .attr("cy", d => yAvgPrecip(d.avgPrecip))
+        .attr("r", 5)
+        .style("fill", d => color(d.city))
+        .style("opacity", 0)  // Make circles invisible by default
+        .on("mouseover", function(event, d) {
+            tooltip.style("visibility", "visible")
+            .html(`
+                <strong>City:</strong> ${d.city}<br>
+                <strong>Month:</strong> ${d3.timeFormat("%b %Y")(d.month)}<br>
+                <strong>Avg. Actual Precipitation (in):</strong> ${d.avgPrecip.toFixed(2)}
+            `)
+                .style("top", (event.pageY + 10) + "px") // Position relative to pointer
+                .style("left", (event.pageX + 10) + "px");
+
+            // Make the hovered circle visible
+            d3.select(this).style("opacity", 1);  // Set opacity to 1 on hover
+
+            // Create the large circle at the hovered point
+            svg2_precip.append("circle")
+                .attr("class", "hover-circle")
+                .attr("cx", xMonth(d.month))  // Position based on the xScale (year)
+                .attr("cy", yAvgPrecip(d.avgPrecip)) // Position based on the yScale (count)
+                .attr("r", 6)  // Radius of the large circle
+                .style("fill", color(d.city)) // Circle color
+                .style("stroke-width", 2);
+        })
+        .on("mousemove", function(event) {
+            tooltip.style("top", (event.pageY + 10) + "px")
+                .style("left", (event.pageX + 10) + "px");
+        })
+        .on("mouseout", function() {
+            tooltip.style("visibility", "hidden");
+
+            // Remove the hover circle when mouseout occurs
+            svg2_precip.selectAll(".hover-circle").remove();
+
+            // Make the circle invisible again
+            d3.select(this).style("opacity", 0);  // Reset opacity to 0 when not hovering
+        });
+
 });
