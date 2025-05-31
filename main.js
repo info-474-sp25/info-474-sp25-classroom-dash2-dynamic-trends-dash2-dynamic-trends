@@ -27,53 +27,76 @@ d3.csv("weather.csv").then(data => {
     window.chicagoData = chicagoData;
     console.log("Filtered Chicago data:", chicagoData.slice(0, 5));
 
-    // 4. SET SCALES FOR CHART 1
-    const x = d3.scaleTime()
-        .domain(d3.extent(chicagoData, d => d.date))
-        .range([0, width]);
+    // 4. INITIAL DRAW FUNCTION
+    function drawChart(dataToUse) {
+        // Clear previous content
+        svg1.selectAll("*").remove();
 
-    const y = d3.scaleLinear()
-        .domain([
-            d3.min(chicagoData, d => d.avg_temp) - 5,
-            d3.max(chicagoData, d => d.avg_temp) + 5
-        ])
-        .range([height, 0]);
+        // Set scales
+        const x = d3.scaleTime()
+            .domain(d3.extent(dataToUse, d => d.date))
+            .range([0, width]);
 
-    // 5. PLOT LINE FOR CHART 1
-    const line = d3.line()
-        .x(d => x(d.date))
-        .y(d => y(d.avg_temp));
+        const y = d3.scaleLinear()
+            .domain([
+                d3.min(dataToUse, d => d.avg_temp) - 5,
+                d3.max(dataToUse, d => d.avg_temp) + 5
+            ])
+            .range([height, 0]);
 
-    svg1.append("path")
-        .datum(chicagoData)
-        .attr("fill", "none")
-        .attr("stroke", "steelblue")
-        .attr("stroke-width", 2)
-        .attr("d", line);
+        // Plot line
+        const line = d3.line()
+            .x(d => x(d.date))
+            .y(d => y(d.avg_temp));
 
-    // 6. ADD AXES FOR CHART 1
-    svg1.append("g")
-        .attr("transform", `translate(0, ${height})`)
-        .call(d3.axisBottom(x));
+        svg1.append("path")
+            .datum(dataToUse)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue")
+            .attr("stroke-width", 2)
+            .attr("d", line);
 
-    svg1.append("g")
-        .call(d3.axisLeft(y));
+        // Axes
+        svg1.append("g")
+            .attr("transform", `translate(0, ${height})`)
+            .call(d3.axisBottom(x));
 
-    // 7. ADD LABELS FOR CHART 1
-    svg1.append("text")
-        .attr("class", "axis-label")
-        .attr("x", width / 2)
-        .attr("y", height + 40)
-        .text("Date");
+        svg1.append("g")
+            .call(d3.axisLeft(y));
 
-    svg1.append("text")
-        .attr("class", "axis-label")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -height / 2)
-        .attr("y", -50)
-        .text("Avg Temperature (°F)");
+        // Labels
+        svg1.append("text")
+            .attr("class", "axis-label")
+            .attr("x", width / 2)
+            .attr("y", height + 40)
+            .text("Date");
 
-    // 8. (OPTIONAL) ADD INTERACTIVITY FOR CHART 1
+        svg1.append("text")
+            .attr("class", "axis-label")
+            .attr("transform", "rotate(-90)")
+            .attr("x", -height / 2)
+            .attr("y", -50)
+            .text("Avg Temperature (°F)");
+    }
+
+    drawChart(chicagoData);
+
+    function updateChartByMonth(selectedMonth) {
+        let filtered = chicagoData;
+
+        if (selectedMonth !== "all") {
+            filtered = chicagoData.filter(d => d.date.getMonth().toString() === selectedMonth);
+        }
+
+        drawChart(filtered);
+    }
+
+    const monthDropdown = document.getElementById("monthDropdown");
+    if (monthDropdown) {
+        monthDropdown.addEventListener("change", function () {
+            updateChartByMonth(this.value);
+        });
+    }
 
     // ==========================================
     // CHART 2 SETUP (Optional)
