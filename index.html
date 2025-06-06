@@ -1,70 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard 2</title>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard 2</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body class="vertical-container">
-  <!-- HEADER -->
-  <div class="item">
-    <h1>Weather Patterns Over Time</h1>
-    <p><strong>Author(s):</strong> Niranjanaa Kannan & Karishma Raj</p>
-    <p><strong>Documentation:</strong>
-      <a href="https://github.com/info-474-sp25/dash2-dynamic-trends-Karishma1113" target="_blank">
-        GitHub Repo & Dashboard Documentation
-      </a>
-    </p>
-  </div>
-
-  <!-- INTERACTIVE WIDGETS -->
-  <div class="item horizontal-container">
+    <!-- HEADER -->
     <div class="item">
-      <label for="monthDropdown"><strong>Select Month:</strong></label>
-      <select id="monthDropdown">
-        <option value="all">All</option>
-        <option value="0">January</option>
-        <option value="1">February</option>
-        <option value="2">March</option>
-        <option value="3">April</option>
-        <option value="4">May</option>
-        <option value="5">June</option>
-        <option value="6">July</option>
-        <option value="7">August</option>
-        <option value="8">September</option>
-        <option value="9">October</option>
-        <option value="10">November</option>
-        <option value="11">December</option>
-      </select>
+        <h1>Weather Patterns Over Time</h1>
+        <p><strong>Author(s):</strong> Niranjanaa Kannan & Karishma Raj</p>
+        <p><strong>Documentation:</strong> 
+            <a href="https://github.com/info-474-sp25/dash2-dynamic-trends-Karishma1113" target="_blank">
+                GitHub Repo & Dashboard Documentation
+            </a>
+        </p>
     </div>
 
-    <div class="item">
-      <label for="cityDropdown"><strong>Select City:</strong></label>
-      <select id="cityDropdown">
-        <option value="chicago">Chicago</option>
-        <option value="philadelphia">Philadelphia</option>
-        <option value="jacksonville">Jacksonville</option>
-        <option value="phoenix">Phoenix</option>
-        <option value="charlotte">Charlotte</option>
-        <option value="indianapolis">Indianapolis</option>
-      </select>
+    <!-- INTERACTIVE WIDGETS -->
+    <div class="item horizontal-container">
+        <div class="item">
+            <label for="monthDropdown"><strong>Select Month:</strong></label>
+            <select id="monthDropdown">
+                <option value="all">All</option>
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6">July</option>
+                <option value="7">August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+            </select>
+        </div>
+
+        <div class="item">
+            <label for="cityDropdown"><strong>Select City:</strong></label>
+            <select id="cityDropdown">
+                <option value="chicago">Chicago</option>
+                <option value="philadelphia">Philadelphia</option>
+                <option value="jacksonville">Jacksonville</option>
+                <option value="phoenix">Phoenix</option>
+                <option value="charlotte">Charlotte</option>
+                <option value="indianapolis">Indianapolis</option>
+            </select>
+        </div>
     </div>
-  </div>
 
-  <!-- CHARTS -->
-  <div class="item chart-container">
-    <h2 id="tempTitle">[City]: Average Temperature Over Time</h2>
-    <svg id="lineChart1" width="900" height="400"></svg>
-  </div>
+    <!-- Trendline Toggle -->
+    <div class="item">
+        <label>
+            <input type="checkbox" id="trendlineToggle">
+            Show Temperature Trendline
+        </label>
+    </div>
 
-  <div class="item chart-container">
-    <h2 id="precipTitle">[City]: Daily Precipitation Over Time</h2>
-    <svg id="lineChart2" width="900" height="400"></svg>
-  </div>
+    <!-- CHARTS -->
+    <div class="item chart-container">
+        <h2 id="tempTitle">Average Temperature Over Time</h2>
+        <svg id="lineChart1" width="900" height="400"></svg>
+    </div>
 
-  <script src="main.js"></script>
+    <div class="item chart-container">
+        <h2 id="precipTitle">Daily Precipitation Over Time</h2>
+        <svg id="lineChart2" width="900" height="400"></svg>
+    </div>
+
+    <script src="main.js"></script>
 </body>
 </html>
 

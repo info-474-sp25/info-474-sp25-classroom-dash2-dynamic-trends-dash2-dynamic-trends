@@ -1,4 +1,3 @@
-// 1. SET GLOBAL VARIABLES
 const margin = { top: 50, right: 30, bottom: 60, left: 70 };
 const width = 900 - margin.left - margin.right;
 const height = 400 - margin.top - margin.bottom;
@@ -17,32 +16,25 @@ d3.csv("weather.csv").then(data => {
     data.forEach(d => {
         d.date = parseDate(d.date.trim());
         d.avg_temp = +d.actual_mean_temp;
-        d.actual_precipitation = d.actual_precipitation?.trim();
-        d.precipitation = d.actual_precipitation === "T" || d.actual_precipitation === ""
-            ? 0
-            : +d.actual_precipitation;
+        d.precipitation = +d.actual_precipitation;
         d.city = d.city.trim().toLowerCase();
     });
 
     const cityDropdown = document.getElementById("cityDropdown");
     const monthDropdown = document.getElementById("monthDropdown");
-    const tempTitle = document.getElementById("tempTitle");
-    const precipTitle = document.getElementById("precipTitle");
+    const trendlineToggle = document.getElementById("trendlineToggle");
 
     function updateCharts() {
-        const selectedCity = cityDropdown.value;
+        const selectedCity = cityDropdown.value.toLowerCase();
         const selectedMonth = monthDropdown.value;
 
-        const filteredCityData = data.filter(d => d.city === selectedCity);
-
-        let filteredData = filteredCityData;
+        let filteredData = data.filter(d => d.city === selectedCity);
         if (selectedMonth !== "all") {
             filteredData = filteredData.filter(d => d.date.getMonth().toString() === selectedMonth);
         }
 
-        const cityTitle = selectedCity.charAt(0).toUpperCase() + selectedCity.slice(1);
-        tempTitle.textContent = `${cityTitle}: Average Temperature Over Time`;
-        precipTitle.textContent = `${cityTitle}: Daily Precipitation Over Time`;
+        document.getElementById("tempTitle").textContent = `${capitalize(selectedCity)}: Average Temperature Over Time`;
+        document.getElementById("precipTitle").textContent = `${capitalize(selectedCity)}: Daily Precipitation Over Time`;
 
         drawTempChart(filteredData);
         drawPrecipChart(filteredData);
@@ -92,18 +84,46 @@ d3.csv("weather.csv").then(data => {
             .attr("x", -height / 2)
             .attr("y", -50)
             .text("Avg Temperature (°F)");
+
+        if (trendlineToggle.checked && dataToUse.length > 1) {
+            const xVals = dataToUse.map(d => d.date.getTime());
+            const yVals = dataToUse.map(d => d.avg_temp);
+
+            const xMean = d3.mean(xVals);
+            const yMean = d3.mean(yVals);
+            const slope = d3.sum(xVals.map((x, i) => (x - xMean) * (yVals[i] - yMean))) /
+                          d3.sum(xVals.map(x => Math.pow(x - xMean, 2)));
+            const intercept = yMean - slope * xMean;
+
+            const xExtent = d3.extent(xVals);
+            const trendlineData = [
+                { date: new Date(xExtent[0]), avg_temp: intercept + slope * xExtent[0] },
+                { date: new Date(xExtent[1]), avg_temp: intercept + slope * xExtent[1] }
+            ];
+
+            const trendline = d3.line()
+                .x(d => x(d.date))
+                .y(d => y(d.avg_temp));
+
+            svg1.append("path")
+                .datum(trendlineData)
+                .attr("fill", "none")
+                .attr("stroke", "red")
+                .attr("stroke-width", 2)
+                .attr("stroke-dasharray", "5,5")
+                .attr("d", trendline);
+        }
     }
 
     function drawPrecipChart(dataToUse) {
         svg2.selectAll("*").remove();
-        dataToUse = dataToUse.filter(d => !isNaN(d.precipitation));
 
         const x = d3.scaleTime()
             .domain(d3.extent(dataToUse, d => d.date))
             .range([0, width]);
 
         const y = d3.scaleLinear()
-            .domain([0, Math.max(0.5, d3.max(dataToUse, d => d.precipitation))])
+            .domain([0, d3.max(dataToUse, d => d.precipitation)])
             .range([height, 0]);
 
         const line = d3.line()
@@ -138,11 +158,17 @@ d3.csv("weather.csv").then(data => {
             .text("Precipitation (inches)");
     }
 
-    updateCharts();
+    function capitalize(s) {
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    }
 
     monthDropdown.addEventListener("change", updateCharts);
     cityDropdown.addEventListener("change", updateCharts);
+    trendlineToggle.addEventListener("change", updateCharts);
+
+    updateCharts();
 });
+
 
 
 
