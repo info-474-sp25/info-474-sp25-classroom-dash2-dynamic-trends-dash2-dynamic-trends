@@ -1,60 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard 2</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script> <!-- Load D3 library -->
-    <link rel="stylesheet" href="style.css"> <!-- Connect to style.css for styles -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard 2</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body class="vertical-container">
-    <!-- HEADER -->
+  <!-- HEADER -->
+  <div class="item">
+    <h1>Weather Patterns Over Time</h1>
+    <p><strong>Author(s):</strong> Niranjanaa Kannan & Karishma Raj</p>
+    <p><strong>Documentation:</strong>
+      <a href="https://github.com/info-474-sp25/dash2-dynamic-trends-Karishma1113" target="_blank">
+        GitHub Repo & Dashboard Documentation
+      </a>
+    </p>
+  </div>
+
+  <!-- INTERACTIVE WIDGETS -->
+  <div class="item horizontal-container">
     <div class="item">
-        <h1>Weather Patterns Over Time</h1>
-        <p><strong>Author(s):</strong> Niranjanaa Kannan & Karishma Raj</p>
-        <p><strong>Documentation:</strong> <a href="YOUR LINK HERE" target="_blank">Edit link in "index.html" on line 13. Give your document "Viewer" access to UW in share settings.</a></p>
-    </div>
-    
-    <!-- INTERACTIVE WIDGETS -->
-    <div class="item horizontal-container">
-        <div class="item"><!-- Your widget 1 code goes here. -->
-            <label for="monthDropdown"><strong>Select Month:</strong></label>
-            <select id="monthDropdown">
-                <option value="all">All</option>
-                <option value="0">January</option>
-                <option value="1">February</option>
-                <option value="2">March</option>
-                <option value="3">April</option>
-                <option value="4">May</option>
-                <option value="5">June</option>
-                <option value="6">July</option>
-                <option value="7">August</option>
-                <option value="8">September</option>
-                <option value="9">October</option>
-                <option value="10">November</option>
-                <option value="11">December</option>
-  </select>
-        </div>
-
-        <!-- DELETE THE FOLLOWING DIV IF YOU ONLY HAVE 1 WIDGET. -->
-        <div class="item"><!-- Your widget 2 code goes here. -->
-            <!-- Widget 2 title -->
-            <!-- Widget 2 element -->
-        </div>
+      <label for="monthDropdown"><strong>Select Month:</strong></label>
+      <select id="monthDropdown">
+        <option value="all">All</option>
+        <option value="0">January</option>
+        <option value="1">February</option>
+        <option value="2">March</option>
+        <option value="3">April</option>
+        <option value="4">May</option>
+        <option value="5">June</option>
+        <option value="6">July</option>
+        <option value="7">August</option>
+        <option value="8">September</option>
+        <option value="9">October</option>
+        <option value="10">November</option>
+        <option value="11">December</option>
+      </select>
     </div>
 
-    <!-- CHART(S) -->
-    <div class="item chart-container">
-        <h2>Chicago: Average Temperature Over Time</h2>
-        <svg id="lineChart1" width="900" height="400"></svg> <!-- If you change this ID name, you must change it in main.js too -->
+    <div class="item">
+      <label for="cityDropdown"><strong>Select City:</strong></label>
+      <select id="cityDropdown">
+        <option value="chicago">Chicago</option>
+        <option value="philadelphia">Philadelphia</option>
+        <option value="jacksonville">Jacksonville</option>
+        <option value="phoenix">Phoenix</option>
+        <option value="charlotte">Charlotte</option>
+        <option value="indianapolis">Indianapolis</option>
+      </select>
     </div>
-    <!-- DELETE THE FOLLOWING DIV IF YOU ONLY HAVE 1 CHART. -->
-    <div class="item chart-container">
-        <h2>[Chart 2 Title]</h2>
-        <svg id="lineChart2" width="900" height="400"></svg>
-    </div>
-    <script src="main.js"></script>
+  </div>
+
+  <!-- CHARTS -->
+  <div class="item chart-container">
+    <h2 id="tempTitle">[City]: Average Temperature Over Time</h2>
+    <svg id="lineChart1" width="900" height="400"></svg>
+  </div>
+
+  <div class="item chart-container">
+    <h2 id="precipTitle">[City]: Daily Precipitation Over Time</h2>
+    <svg id="lineChart2" width="900" height="400"></svg>
+  </div>
+
+  <script src="main.js"></script>
 </body>
 </html>
 
-<!-- Starter code polished with assistance from DeepSeek. -->
+
